@@ -30,6 +30,15 @@ header {
 
 h1 { font-size:22px; margin:0; }
 
+.primary-btn {
+  padding:8px 14px;
+  border-radius:999px;
+  border:none;
+  background:var(--accent);
+  color:#fff;
+  cursor:pointer;
+}
+
 .filters {
   display:flex;
   gap:8px;
@@ -60,6 +69,7 @@ h1 { font-size:22px; margin:0; }
   border-radius:16px;
   padding:16px;
   box-shadow:0 8px 24px rgba(0,0,0,.06);
+  cursor:pointer;
 }
 
 .vehicle { font-weight:600; margin-bottom:4px; }
@@ -70,6 +80,57 @@ h1 { font-size:22px; margin:0; }
   font-size:13px;
   color:var(--sub);
 }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+}
+.modal-overlay.active { display:flex; }
+
+.modal {
+  background:#fff;
+  width:100%;
+  max-width:480px;
+  border-radius:20px;
+  padding:20px;
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp {
+  from { transform:translateY(20px); opacity:0; }
+  to { transform:none; opacity:1; }
+}
+
+.form-group { margin-bottom:12px; }
+.form-group label {
+  display:block;
+  font-size:13px;
+  color:var(--sub);
+  margin-bottom:4px;
+}
+.form-group input {
+  width:100%;
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid #ddd;
+}
+
+.modal-actions {
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+.secondary-btn {
+  background:none;
+  border:none;
+  color:var(--sub);
+  cursor:pointer;
+}
 </style>
 </head>
 
@@ -77,7 +138,7 @@ h1 { font-size:22px; margin:0; }
 
 <header>
   <h1>Заказы в работе</h1>
-  <button>Новый заказ</button>
+  <button class="primary-btn" onclick="openModal()">Новый заказ</button>
 </header>
 
 <div class="filters">
@@ -90,10 +151,39 @@ h1 { font-size:22px; margin:0; }
 
 <div id="grid" class="grid"></div>
 
-<script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbz6rOJHvEVzYzAM8xVSnUlqhGzcrzbCY8HkI3rNWLvOyiFJQeOrmi6xsb5OfxvUA62kbQ/exec';
+<!-- MODAL -->
+<div id="modal" class="modal-overlay">
+  <div class="modal">
+    <h2>Новый заказ</h2>
 
+    <div class="form-group">
+      <label>Клиент</label>
+      <input type="text">
+    </div>
+
+    <div class="form-group">
+      <label>Автомобиль</label>
+      <input type="text">
+    </div>
+
+    <div class="form-group">
+      <label>Дата приёма</label>
+      <input type="date">
+    </div>
+
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeModal()">Отмена</button>
+      <button class="primary-btn">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = 'ВСТАВЬ_СЮДА_API_URL';
+const grid = document.getElementById('grid');
 const filters = document.querySelectorAll('.filter');
+
+/* ===== FILTERS ===== */
 filters.forEach(f => {
   f.addEventListener('click', () => {
     filters.forEach(x => x.classList.remove('active'));
@@ -102,28 +192,31 @@ filters.forEach(f => {
   });
 });
 
-loadOrders();
-
-function loadOrders(status='') {
+/* ===== LOAD ORDERS ===== */
+function loadOrders(status = '') {
   const url = status ? `${API_URL}?status=${status}` : API_URL;
 
   fetch(url)
     .then(r => r.json())
-    .then(j => render(j.data.slice(0,6)));
+    .then(j => {
+      if (!j.success) throw new Error();
+      render(j.data.slice(0,6));
+    })
+    .catch(() => {
+      grid.innerHTML = '';
+    });
 }
 
 function render(orders) {
-  const grid = document.getElementById('grid');
   grid.innerHTML = '';
-
   orders.forEach(o => {
     const c = document.createElement('div');
     c.className = 'card';
     c.innerHTML = `
-      <div class="vehicle">${o.vehicle}</div>
-      <div class="client">${o.client_id}</div>
+      <div class="vehicle">${o.vehicle || ''}</div>
+      <div class="client">${o.client_id || ''}</div>
       <div class="footer">
-        <div>${o.status_name}</div>
+        <div>${o.status_name || ''}</div>
         <div>${formatDate(o.order_date)}</div>
       </div>`;
     grid.appendChild(c);
@@ -135,6 +228,17 @@ function formatDate(s) {
   const d = new Date(s);
   return d.toLocaleDateString('ru-RU');
 }
+
+/* ===== MODAL ===== */
+function openModal() {
+  document.getElementById('modal').classList.add('active');
+}
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+/* INIT */
+loadOrders();
 </script>
 
 </body>
