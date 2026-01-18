@@ -69,7 +69,6 @@ h1 { font-size:22px; margin:0; }
   border-radius:16px;
   padding:16px;
   box-shadow:0 8px 24px rgba(0,0,0,.06);
-  cursor:pointer;
 }
 
 .vehicle { font-weight:600; margin-bottom:4px; }
@@ -99,38 +98,8 @@ h1 { font-size:22px; margin:0; }
   max-width:480px;
   border-radius:20px;
   padding:20px;
-  animation:slideUp .25s ease;
-}
-@keyframes slideUp {
-  from { transform:translateY(20px); opacity:0; }
-  to { transform:none; opacity:1; }
 }
 
-.form-group { margin-bottom:12px; }
-.form-group label {
-  display:block;
-  font-size:13px;
-  color:var(--sub);
-  margin-bottom:4px;
-}
-.form-group input {
-  width:100%;
-  padding:8px 10px;
-  border-radius:10px;
-  border:1px solid #ddd;
-}
-
-.modal-actions {
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
-}
-.secondary-btn {
-  background:none;
-  border:none;
-  color:var(--sub);
-  cursor:pointer;
-}
 </style>
 </head>
 
@@ -155,35 +124,15 @@ h1 { font-size:22px; margin:0; }
 <div id="modal" class="modal-overlay">
   <div class="modal">
     <h2>Новый заказ</h2>
-
-    <div class="form-group">
-      <label>Клиент</label>
-      <input type="text">
-    </div>
-
-    <div class="form-group">
-      <label>Автомобиль</label>
-      <input type="text">
-    </div>
-
-    <div class="form-group">
-      <label>Дата приёма</label>
-      <input type="date">
-    </div>
-
-    <div class="modal-actions">
-      <button class="secondary-btn" onclick="closeModal()">Отмена</button>
-      <button class="primary-btn">Сохранить</button>
-    </div>
+    <button onclick="closeModal()">Закрыть</button>
   </div>
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbz6rOJHvEVzYzAM8xVSnUlqhGzcrzbCY8HkI3rNWLvOyiFJQeOrmi6xsb5OfxvUA62kbQ/exec';
+const API_URL = 'Вhttps://script.google.com/macros/s/AKfycbz6rOJHvEVzYzAM8xVSnUlqhGzcrzbCY8HkI3rNWLvOyiFJQeOrmi6xsb5OfxvUA62kbQ/exec';
 const grid = document.getElementById('grid');
 const filters = document.querySelectorAll('.filter');
 
-/* ===== FILTERS ===== */
 filters.forEach(f => {
   f.addEventListener('click', () => {
     filters.forEach(x => x.classList.remove('active'));
@@ -192,18 +141,20 @@ filters.forEach(f => {
   });
 });
 
-/* ===== LOAD ORDERS ===== */
-function loadOrders(status = '') {
-  const url = status ? `${API_URL}?status=${status}` : API_URL;
+function loadOrders(status='') {
+  const url =
+    API_URL +
+    (status ? `?status=${status}` : '') +
+    (status ? '&' : '?') +
+    `_ts=${Date.now()}`;
+
+  console.log('LOAD:', url);
 
   fetch(url)
     .then(r => r.json())
     .then(j => {
-      if (!j.success) throw new Error();
+      console.log('DATA:', j.count);
       render(j.data.slice(0,6));
-    })
-    .catch(() => {
-      grid.innerHTML = '';
     });
 }
 
@@ -225,11 +176,9 @@ function render(orders) {
 
 function formatDate(s) {
   if (!s) return '';
-  const d = new Date(s);
-  return d.toLocaleDateString('ru-RU');
+  return new Date(s).toLocaleDateString('ru-RU');
 }
 
-/* ===== MODAL ===== */
 function openModal() {
   document.getElementById('modal').classList.add('active');
 }
@@ -237,7 +186,6 @@ function closeModal() {
   document.getElementById('modal').classList.remove('active');
 }
 
-/* INIT */
 loadOrders();
 </script>
 
