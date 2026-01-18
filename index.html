@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -45,29 +45,6 @@
       cursor: pointer;
     }
 
-    .filters {
-      display: inline-flex;
-      background: var(--card-bg);
-      border-radius: 999px;
-      padding: 4px;
-      margin-bottom: 20px;
-      border: 1px solid var(--border);
-    }
-
-    .filter {
-      padding: 6px 12px;
-      font-size: 13px;
-      border-radius: 999px;
-      cursor: pointer;
-      color: var(--text-secondary);
-      transition: background .2s;
-    }
-
-    .filter.active {
-      background: var(--accent);
-      color: #fff;
-    }
-
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -81,38 +58,83 @@
       box-shadow:
         0 1px 2px rgba(0,0,0,0.04),
         0 8px 24px rgba(0,0,0,0.06);
-      cursor: pointer;
-      transition: transform .15s ease, box-shadow .15s ease;
     }
 
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow:
-        0 4px 8px rgba(0,0,0,0.06),
-        0 16px 32px rgba(0,0,0,0.08);
+    /* ===== MODAL ===== */
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
     }
 
-    .vehicle {
-      font-size: 16px;
-      font-weight: 600;
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      animation: slideUp .25s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal h2 {
+      margin: 0 0 16px 0;
+      font-size: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
       margin-bottom: 4px;
     }
 
-    .client {
+    .form-group input {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      outline: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .secondary-btn {
+      background: transparent;
+      border: none;
       font-size: 14px;
       color: var(--text-secondary);
-      margin-bottom: 12px;
-    }
-
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    .status {
-      font-weight: 500;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -121,46 +143,51 @@
 
 <header>
   <h1>Заказы в работе</h1>
-  <button class="primary-btn">Новый заказ</button>
+  <button class="primary-btn" onclick="openModal()">Новый заказ</button>
 </header>
 
-<div class="filters">
-  <div class="filter active">Все</div>
-  <div class="filter">Принят</div>
-  <div class="filter">В работе</div>
-  <div class="filter">Готов</div>
-</div>
-
 <div class="grid">
-
-  <div class="card">
-    <div class="vehicle">BMW X5 3.0d</div>
-    <div class="client">Иван Иванов</div>
-    <div class="footer">
-      <div class="status">Принят</div>
-      <div>12.01.2025</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="vehicle">Audi A6 2.0 TDI</div>
-    <div class="client">ООО «АвтоПлюс»</div>
-    <div class="footer">
-      <div class="status">В работе</div>
-      <div>10.01.2025</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="vehicle">VW Passat 1.9 TDI</div>
-    <div class="client">Сергей Петров</div>
-    <div class="footer">
-      <div class="status">Готов</div>
-      <div>08.01.2025</div>
-    </div>
-  </div>
-
+  <div class="card">BMW X5 3.0d</div>
+  <div class="card">Audi A6 2.0 TDI</div>
 </div>
+
+<!-- ===== MODAL ===== -->
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>Новый заказ</h2>
+
+    <div class="form-group">
+      <label>Клиент</label>
+      <input type="text" placeholder="ФИО или компания">
+    </div>
+
+    <div class="form-group">
+      <label>Автомобиль</label>
+      <input type="text" placeholder="Марка, модель, двигатель">
+    </div>
+
+    <div class="form-group">
+      <label>Дата приёма</label>
+      <input type="date">
+    </div>
+
+    <div class="modal-actions">
+      <button class="secondary-btn" onclick="closeModal()">Отмена</button>
+      <button class="primary-btn">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openModal() {
+    document.getElementById('modal').classList.add('active');
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+  }
+</script>
 
 </body>
 </html>
