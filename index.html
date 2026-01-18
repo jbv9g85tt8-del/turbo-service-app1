@@ -58,83 +58,44 @@
       box-shadow:
         0 1px 2px rgba(0,0,0,0.04),
         0 8px 24px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease;
     }
 
-    /* ===== MODAL ===== */
-
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 4px 8px rgba(0,0,0,0.06),
+        0 16px 32px rgba(0,0,0,0.08);
     }
 
-    .modal-overlay.active {
-      display: flex;
-    }
-
-    .modal {
-      background: var(--card-bg);
-      width: 100%;
-      max-width: 480px;
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-      animation: slideUp .25s ease;
-    }
-
-    @keyframes slideUp {
-      from {
-        transform: translateY(20px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-
-    .modal h2 {
-      margin: 0 0 16px 0;
-      font-size: 18px;
-    }
-
-    .form-group {
-      margin-bottom: 14px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      color: var(--text-secondary);
+    .vehicle {
+      font-size: 16px;
+      font-weight: 600;
       margin-bottom: 4px;
     }
 
-    .form-group input {
-      width: 100%;
-      padding: 8px 10px;
-      font-size: 14px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      outline: none;
-    }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    .secondary-btn {
-      background: transparent;
-      border: none;
+    .client {
       font-size: 14px;
       color: var(--text-secondary);
-      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .status {
+      font-weight: 500;
+    }
+
+    .empty {
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-top: 40px;
     }
   </style>
 </head>
@@ -143,51 +104,82 @@
 
 <header>
   <h1>Заказы в работе</h1>
-  <button class="primary-btn" onclick="openModal()">Новый заказ</button>
+  <button class="primary-btn">Новый заказ</button>
 </header>
 
-<div class="grid">
-  <div class="card">BMW X5 3.0d</div>
-  <div class="card">Audi A6 2.0 TDI</div>
-</div>
-
-<!-- ===== MODAL ===== -->
-
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <h2>Новый заказ</h2>
-
-    <div class="form-group">
-      <label>Клиент</label>
-      <input type="text" placeholder="ФИО или компания">
-    </div>
-
-    <div class="form-group">
-      <label>Автомобиль</label>
-      <input type="text" placeholder="Марка, модель, двигатель">
-    </div>
-
-    <div class="form-group">
-      <label>Дата приёма</label>
-      <input type="date">
-    </div>
-
-    <div class="modal-actions">
-      <button class="secondary-btn" onclick="closeModal()">Отмена</button>
-      <button class="primary-btn">Сохранить</button>
-    </div>
-  </div>
+<div id="ordersGrid" class="grid"></div>
+<div id="emptyState" class="empty" style="display:none;">
+  Активных заказов нет
 </div>
 
 <script>
-  function openModal() {
-    document.getElementById('modal').classList.add('active');
+  // ===== НАСТРОЙКА =====
+  const API_URL = 'https://script.google.com/macros/s/AKfycbz6rOJHvEVzYzAM8xVSnUlqhGzcrzbCY8HkI3rNWLvOyiFJQeOrmi6xsb5OfxvUA62kbQ/exec';
+
+  // ===== ЗАГРУЗКА ДАННЫХ =====
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(json => {
+      if (!json.success) throw new Error('API error');
+
+      const orders = json.data
+        .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
+        .slice(0, 6);
+
+      renderOrders(orders);
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById('emptyState').style.display = 'block';
+    });
+
+  // ===== ОТРИСОВКА =====
+  function renderOrders(orders) {
+    const grid = document.getElementById('ordersGrid');
+    grid.innerHTML = '';
+
+    if (orders.length === 0) {
+      document.getElementById('emptyState').style.display = 'block';
+      return;
+    }
+
+    orders.forEach(order => {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      card.innerHTML = `
+        <div class="vehicle">${escapeHtml(order.vehicle || '')}</div>
+        <div class="client">${escapeHtml(order.client_id || '')}</div>
+        <div class="footer">
+          <div class="status">${escapeHtml(order.status_name || '')}</div>
+          <div>${formatDate(order.order_date)}</div>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
   }
 
-  function closeModal() {
-    document.getElementById('modal').classList.remove('active');
+  // ===== УТИЛИТЫ =====
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}.${month}.${year}`;
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/[&<>"']/g, m => ({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    })[m]);
   }
 </script>
 
 </body>
-</html>
+</html>>
