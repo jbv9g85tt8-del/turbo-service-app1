@@ -1,185 +1,141 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Turbo Service</title>
+<meta charset="UTF-8">
+<title>Turbo Service</title>
 
-  <style>
-    :root {
-      --bg: #f5f5f7;
-      --card-bg: #ffffff;
-      --text-main: #1d1d1f;
-      --text-secondary: #6e6e73;
-      --accent: #0071e3;
-      --border: #e5e5ea;
-    }
+<style>
+:root {
+  --bg:#f5f5f7;
+  --card:#fff;
+  --text:#1d1d1f;
+  --sub:#6e6e73;
+  --accent:#0071e3;
+}
 
-    body {
-      margin: 0;
-      padding: 20px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text-main);
-    }
+body {
+  margin:0;
+  padding:20px;
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;
+  background:var(--bg);
+  color:var(--text);
+}
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
+header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
 
-    h1 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 600;
-    }
+h1 { font-size:22px; margin:0; }
 
-    .primary-btn {
-      padding: 8px 14px;
-      font-size: 14px;
-      border-radius: 999px;
-      border: none;
-      background: var(--accent);
-      color: #fff;
-      cursor: pointer;
-    }
+.filters {
+  display:flex;
+  gap:8px;
+  margin-bottom:16px;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 16px;
-    }
+.filter {
+  padding:6px 12px;
+  border-radius:999px;
+  background:#fff;
+  font-size:13px;
+  cursor:pointer;
+}
 
-    .card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow:
-        0 1px 2px rgba(0,0,0,0.04),
-        0 8px 24px rgba(0,0,0,0.06);
-      cursor: pointer;
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
+.filter.active {
+  background:var(--accent);
+  color:#fff;
+}
 
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow:
-        0 4px 8px rgba(0,0,0,0.06),
-        0 16px 32px rgba(0,0,0,0.08);
-    }
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:16px;
+}
 
-    .vehicle {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
+.card {
+  background:var(--card);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 8px 24px rgba(0,0,0,.06);
+}
 
-    .client {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 10px;
-    }
-
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    .status {
-      font-weight: 500;
-    }
-
-    .empty {
-      color: var(--text-secondary);
-      font-size: 14px;
-      margin-top: 40px;
-    }
-  </style>
+.vehicle { font-weight:600; margin-bottom:4px; }
+.client { color:var(--sub); font-size:14px; margin-bottom:8px; }
+.footer {
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  color:var(--sub);
+}
+</style>
 </head>
 
 <body>
 
 <header>
   <h1>Заказы в работе</h1>
-  <button class="primary-btn">Новый заказ</button>
+  <button>Новый заказ</button>
 </header>
 
-<div id="ordersGrid" class="grid"></div>
-<div id="emptyState" class="empty" style="display:none;">
-  Активных заказов нет
+<div class="filters">
+  <div class="filter active" data-status="">Все</div>
+  <div class="filter" data-status="st_001">Принят</div>
+  <div class="filter" data-status="st_002">В работе</div>
+  <div class="filter" data-status="st_003">Ожидание</div>
+  <div class="filter" data-status="st_004">Готов</div>
 </div>
 
+<div id="grid" class="grid"></div>
+
 <script>
-  // ===== НАСТРОЙКА =====
-  const API_URL = 'https://script.google.com/macros/s/AKfycbz6rOJHvEVzYzAM8xVSnUlqhGzcrzbCY8HkI3rNWLvOyiFJQeOrmi6xsb5OfxvUA62kbQ/exec';
+const API_URL = 'ВСТАВЬ_СЮДА_API_URL';
 
-  // ===== ЗАГРУЗКА ДАННЫХ =====
-  fetch(API_URL)
-    .then(res => res.json())
-    .then(json => {
-      if (!json.success) throw new Error('API error');
+const filters = document.querySelectorAll('.filter');
+filters.forEach(f => {
+  f.addEventListener('click', () => {
+    filters.forEach(x => x.classList.remove('active'));
+    f.classList.add('active');
+    loadOrders(f.dataset.status);
+  });
+});
 
-      const orders = json.data
-        .sort((a, b) => new Date(b.order_date) - new Date(a.order_date))
-        .slice(0, 6);
+loadOrders();
 
-      renderOrders(orders);
-    })
-    .catch(err => {
-      console.error(err);
-      document.getElementById('emptyState').style.display = 'block';
-    });
+function loadOrders(status='') {
+  const url = status ? `${API_URL}?status=${status}` : API_URL;
 
-  // ===== ОТРИСОВКА =====
-  function renderOrders(orders) {
-    const grid = document.getElementById('ordersGrid');
-    grid.innerHTML = '';
+  fetch(url)
+    .then(r => r.json())
+    .then(j => render(j.data.slice(0,6)));
+}
 
-    if (orders.length === 0) {
-      document.getElementById('emptyState').style.display = 'block';
-      return;
-    }
+function render(orders) {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
 
-    orders.forEach(order => {
-      const card = document.createElement('div');
-      card.className = 'card';
+  orders.forEach(o => {
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.innerHTML = `
+      <div class="vehicle">${o.vehicle}</div>
+      <div class="client">${o.client_id}</div>
+      <div class="footer">
+        <div>${o.status_name}</div>
+        <div>${formatDate(o.order_date)}</div>
+      </div>`;
+    grid.appendChild(c);
+  });
+}
 
-      card.innerHTML = `
-        <div class="vehicle">${escapeHtml(order.vehicle || '')}</div>
-        <div class="client">${escapeHtml(order.client_id || '')}</div>
-        <div class="footer">
-          <div class="status">${escapeHtml(order.status_name || '')}</div>
-          <div>${formatDate(order.order_date)}</div>
-        </div>
-      `;
-
-      grid.appendChild(card);
-    });
-  }
-
-  // ===== УТИЛИТЫ =====
-  function formatDate(dateStr) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    const day = String(d.getDate()).padStart(2, '0');
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = d.getFullYear();
-    return `${day}.${month}.${year}`;
-  }
-
-  function escapeHtml(str) {
-    return str.replace(/[&<>"']/g, m => ({
-      '&':'&amp;',
-      '<':'&lt;',
-      '>':'&gt;',
-      '"':'&quot;',
-      "'":'&#39;'
-    })[m]);
-  }
+function formatDate(s) {
+  if (!s) return '';
+  const d = new Date(s);
+  return d.toLocaleDateString('ru-RU');
+}
 </script>
 
 </body>
-</html>>
+</html>
