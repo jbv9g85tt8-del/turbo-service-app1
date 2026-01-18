@@ -2,10 +2,141 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Turbo Service App</title>
+  <title>Turbo Service</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .filter {
+      padding: 6px 10px;
+      background: #fff;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid #e5e7eb;
+    }
+
+    .filter.active {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      cursor: pointer;
+    }
+
+    .vehicle {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .client {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .status {
+      font-weight: bold;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Turbo Service App</h1>
-  <p>Приложение запущено и работает.</p>
+
+<header>
+  <h1>Заказы в работе</h1>
+  <button>➕ Новый заказ</button>
+</header>
+
+<div class="filters">
+  <div class="filter active">Все</div>
+  <div class="filter">Принят</div>
+  <div class="filter">В работе</div>
+  <div class="filter">Готов</div>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="vehicle">BMW X5 3.0d</div>
+    <div class="client">Иван Иванов</div>
+    <div class="footer">
+      <div class="status">Принят</div>
+      <div>12.01.2025</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="vehicle">Audi A6 2.0 TDI</div>
+    <div class="client">ООО «АвтоПлюс»</div>
+    <div class="footer">
+      <div class="status">В работе</div>
+      <div>10.01.2025</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="vehicle">VW Passat 1.9 TDI</div>
+    <div class="client">Сергей Петров</div>
+    <div class="footer">
+      <div class="status">Готов</div>
+      <div>08.01.2025</div>
+    </div>
+  </div>
+
+</div>
+
 </body>
 </html>
